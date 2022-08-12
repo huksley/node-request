@@ -1,8 +1,9 @@
 {
   "name": "@huksley/request",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "[gist-sized] Zero dependency, single-file NodeJS 14+ HTTP(s) request module",
   "main": "request.js",
+  "type": "module",
   "repository": "https://github.com/huksley/node-request",
   "bugs": "https://github.com/huksley/node-request/issues",
   "homepage": "https://github.com/huksley/node-request",

@@ -1,10 +1,11 @@
 import { request as httpsRequest } from "https";
 import { IncomingMessage, request as httpRequest } from "http";
 import * as zlib from "zlib";
+import { inspect } from "util";
 
 /**
- * Makes HTTP(s) request and returns response with parsed body. 
- * 
+ * Makes HTTP(s) request and returns response with parsed body.
+ *
  * ```
  * const res = await request("https://jsonip.com")
  * console.info("Your IP", res.body.ip, "headers", res.headers)
@@ -28,7 +29,7 @@ export const request = async (url, options) => {
       {
         timeout: timeout || 10000,
         servername: u.host,
-        rejectUnauthorized: options.rejectUnauthorized || true,
+        rejectUnauthorized: options?.rejectUnauthorized || true,
         method: method || "GET",
         encoding: encoding !== undefined ? null : encoding,
         headers: {
@@ -52,10 +53,16 @@ export const request = async (url, options) => {
         // Collect body
         let data = Buffer.alloc(0);
         res.on("data", (chunk) => (data = Buffer.concat([data, chunk])));
-        res.on("error", (err) => {
-          const e = new Error("HTTP request failed: " + url);
-          e.error = err;
-          reject(e);
+        res.on("error", (e) => {
+          const err = new Error("HTTP request failed: " + url);
+          err.cause = e;
+          // Add properties but disallow too verbose dumping
+          res[inspect.custom] = () => {
+            return "**Response**";
+          };
+          // This disallows dump of response in error log and in 
+          Object.defineProperty(err, "response", { enumerable: true, get: () => res });
+          reject(err);
         });
 
         let handler = (func) => () => func(undefined, data);
@@ -74,11 +81,16 @@ export const request = async (url, options) => {
 
         res.on(
           "end",
-          handler((err, data) => {
-            if (err) {
-              const e = new Error("HTTP request failed: " + url);
-              e.error = err;
-              reject(e);
+          handler((e, data) => {
+            if (e) {
+              const err = new Error("HTTP request failed: " + url);
+              err.cause = e;
+              // Add properties but disallow too verbose dumping
+              res[inspect.custom] = () => {
+                return "**Response**";
+              };
+              Object.defineProperty(err, "response", { enumerable: true, get: () => res });
+              reject(err);
               return;
             }
 
@@ -92,21 +104,30 @@ export const request = async (url, options) => {
               } else {
                 res.body = data;
               }
-            } catch (err) {
-              const e = new Error("HTTP request failed: " + url);
-              e.error = err;
-              reject(e);
+            } catch (e) {
+              const err = new Error("HTTP request failed: " + url);
+              err.cause = e;
+              // Add properties but disallow too verbose dumping
+              res[inspect.custom] = () => {
+                return "**Response**";
+              };
+              Object.defineProperty(err, "response", { enumerable: true, get: () => res });
+              reject(err);
             }
 
             if (res.statusCode && res.statusCode >= 200 && res.statusCode <= 399) {
               resolve(res);
             } else {
               if (verbose) {
-                console.info("HTTP request failed", url, res.statusCode, data);
+                console.info("HTTP request failed", url, res.statusCode);
               }
               const err = new Error("HTTP request failed: " + url);
               err.statusCode = res.statusCode;
-              err.response = res;
+              // Add properties but disallow too verbose dumping
+              res[inspect.custom] = () => {
+                return "**Response**";
+              };
+              Object.defineProperty(err, "response", { enumerable: true, get: () => res });
               reject(err);
             }
           })
