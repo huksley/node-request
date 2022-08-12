@@ -1,0 +1,35 @@
+{
+  "name": "node-request",
+  "version": "1.0.0",
+  "description": "Zero dependency, single-file NodeJS 14+ HTTP(s) request module",
+  "main": "request.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/huksley/node-request.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "esbuild --format=cjs request.js > request.cjs"
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "exports": {
+    ".": {
+      "import": "./request.js",
+      "require": "./request.cjs"
+    }
+  },
+  "keywords": [
+    "http",
+    "https",
+    "request",
+    "fetch"
+  ],
+  "author": "Ruslan Gainutdinov",
+  "types": "types.d.ts",
+  "license": "MIT",
+  "devDependencies": {
+    "esbuild": "^0.15.1"
+  }
+}
