@@ -17,6 +17,7 @@ export const request = async (url, options) => {
   const { method, body, headers, timeout, verbose, encoding } = options || {};
   const payload = body ? (typeof body == "object" ? JSON.stringify(body) : body) : undefined;
   const u = new URL(url);
+
   if (verbose) {
     console.info("HTTP", method || "GET", url, payload ? "payload " + payload.length + " bytes" : "");
   }
@@ -27,6 +28,7 @@ export const request = async (url, options) => {
       {
         timeout: timeout || 10000,
         servername: u.host,
+        rejectUnauthorized: options.rejectUnauthorized || true,
         method: method || "GET",
         encoding: encoding !== undefined ? null : encoding,
         headers: {
