@@ -8,8 +8,9 @@ Zero-dependency alternative of fetch for NodeJS (with different API).
 ```js
 const { request } = require("@huksley/request");
 
-const res = await request("https://jsonip.com");
-console.info("Your IP", res.body.ip, "headers", res.headers);
+request("https://jsonip.com").then((res) => {
+  console.info("Your IP", res.body.ip, "headers", res.headers);
+});
 ```
 
 **ESM**
